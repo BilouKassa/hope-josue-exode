@@ -430,6 +430,7 @@ body:not(.revele) .reveal{opacity:0}
 
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
 </head>
 <body class="locked">
 <!-- ══ ÉCRAN D'OUVERTURE ══ -->
@@ -708,12 +709,12 @@ body:not(.revele) .reveal{opacity:0}
         <p style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.3);margin-bottom:16px">Présentez ce code à l'entrée le jour J</p>
         <button type="button" id="dl-qr" onclick="telechargerQR()" style="width:100%;padding:13px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.5);border-radius:3px;color:#e8c46a;font-family:'Playfair Display',serif;font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:background 0.3s">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e8c46a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-          Télécharger mon QR code
+          Enregistrer mon pass
         </button>
       </div>
 
-      <p class="wa-note">Puis envoyez votre confirmation par WhatsApp aux mariés</p>
-      <a class="wa-btn" id="wa-link" href="#" target="_blank" rel="noopener">
+      <p class="wa-note">Envoyez votre pass + votre confirmation aux mariés :<br>choisissez <b>WhatsApp</b>, puis la conversation <b>Hope &amp; Josué (+241 060 37 21 44)</b></p>
+      <a class="wa-btn" id="wa-link" href="#" target="_blank" rel="noopener" onclick="envoyerWhatsApp(event)">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
         Envoyer sur WhatsApp
       </a>
@@ -909,18 +910,24 @@ function afficher(nom,wa,nb,presence,msg,token){
     window.__qrApiUrl = qrApiUrl;
     window.__qrNom = nom;
 
-    // Construire le message WhatsApp avec le lien du QR
-    var txt = '✝ *Mariage Hope & Josué EXODE*\n\n'
-      + '✅ *Confirmation de présence*\n\n'
+    // Message WhatsApp SANS lien : le pass d'entrée part en image
+    var txt = '✝️ *Mariage Hope & Josué EXODE*\n\n'
+      + '✅ *Je confirme ma présence*\n\n'
       + '👤 Nom : ' + nom + '\n'
       + '📱 WhatsApp : ' + wa + '\n'
       + '📅 Présence : ' + presence + '\n'
       + '👥 Personnes : ' + nb + '\n'
       + (msg ? '💬 Message : ' + msg + '\n' : '')
-      + '\n🎟️ *Votre QR code d\'entrée (gardez ce lien) :*\n' + window.__checkinUrl + '\n'
-      + '\n_Présentez le QR à l\'entrée le jour du mariage_\n'
-      + '_Libreville, Gabon — 17 & 19 Déc 2026_';
+      + '\n🎟️ Mon pass d\'entrée est sur l\'image ci-jointe.\n'
+      + '_Libreville, Gabon — 17 & 19 déc. 2026_';
+    window.__waTxt = txt;
     document.getElementById('wa-link').href = 'https://wa.me/' + NUMERO + '?text=' + encodeURIComponent(txt);
+
+    // Préparer la carte image tout de suite (le partage doit être instantané au clic)
+    window.__carteBlob = null;
+    creerCarte({ nom: nom, presence: presence, nb: nb, url: window.__checkinUrl })
+      .then(function(b){ window.__carteBlob = b; })
+      .catch(function(e){ console.warn('Carte:', e); });
   }
   genererQR();
   sc.scrollIntoView({behavior:'smooth',block:'start'});
@@ -928,87 +935,97 @@ function afficher(nom,wa,nb,presence,msg,token){
 
 /* ── TÉLÉCHARGER LE QR CODE EN IMAGE ── */
 function telechargerQR(){
-  var btn = document.getElementById('dl-qr');
-  var oldHtml = btn.innerHTML;
-  btn.innerHTML = 'Préparation de l\'image…';
+  var btn=document.getElementById('dl-qr'), old=btn.innerHTML;
+  if(!window.__carteBlob){ btn.innerHTML='Préparation…'; setTimeout(function(){btn.innerHTML=old; telechargerQR();},700); return; }
+  var file=new File([window.__carteBlob], nomFichier(), {type:'image/png'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({files:[file]}).catch(function(){});   // menu Partager → « Enregistrer l'image »
+  } else {
+    var a=document.createElement('a'); a.href=URL.createObjectURL(window.__carteBlob); a.download=nomFichier();
+    document.body.appendChild(a); a.click(); a.remove();
+    btn.innerHTML='✓ Pass téléchargé'; setTimeout(function(){btn.innerHTML=old;},2500);
+  }
+}
 
-  var nom = window.__qrNom || 'Invite';
-  // Récupérer l'image QR haute résolution
-  var qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=600x600&data='
-    + encodeURIComponent(window.__checkinUrl) + '&color=0b1628&bgcolor=ffffff&ecc=H&margin=2';
+function nomFichier(){ return 'Pass-Mariage-Hope-Josue-' + (window.__qrNom||'invite').replace(/[^a-z0-9]+/gi,'-') + '.png'; }
 
-  var qrImg = new Image();
-  qrImg.crossOrigin = 'anonymous';
-  qrImg.onload = function(){
-    // Dessiner une belle carte d'entrée sur canvas
-    var W = 760, H = 1000;
-    var c = document.createElement('canvas');
-    c.width = W; c.height = H;
-    var ctx = c.getContext('2d');
+/* ── ENVOYER IMAGE + TEXTE SUR WHATSAPP ── */
+function envoyerWhatsApp(ev){
+  if(!window.__carteBlob) return;               // carte pas prête : le lien wa.me (texte seul) prend le relais
+  var file=new File([window.__carteBlob], nomFichier(), {type:'image/png'});
+  if(navigator.canShare && navigator.canShare({files:[file]})){
+    ev.preventDefault();
+    navigator.share({ files:[file], text: window.__waTxt }).catch(function(){});
+  } else {
+    // Ordinateur : on télécharge l'image puis on ouvre WhatsApp avec le texte
+    var a=document.createElement('a'); a.href=URL.createObjectURL(window.__carteBlob); a.download=nomFichier();
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+}
 
-    // Fond bleu nuit
-    ctx.fillStyle = '#0c1a30';
-    ctx.fillRect(0,0,W,H);
-    // Bordure dorée
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(20,20,W-40,H-40);
+/* ── CRÉER LA CARTE « PASS D'ENTRÉE » EN IMAGE ── */
+async function creerCarte(d){
+  var W=1080, H=1440, c=document.createElement('canvas'); c.width=W; c.height=H;
+  var x=c.getContext('2d');
+  try{ await Promise.all([document.fonts.load('120px "Great Vibes"'), document.fonts.load('600 60px "Playfair Display"'), document.fonts.load('italic 34px "Cormorant Garamond"'), document.fonts.load('600 30px "Cormorant Garamond"')]); }catch(e){}
 
-    // Titre
-    ctx.fillStyle = '#e8c46a';
-    ctx.textAlign = 'center';
-    ctx.font = '600 30px Georgia, serif';
-    ctx.fillText('MARIAGE HOPE & JOSUÉ EXODE', W/2, 80);
-    ctx.font = 'italic 20px Georgia, serif';
-    ctx.fillStyle = '#b8cce8';
-    ctx.fillText('17 & 19 Décembre 2026 · Libreville', W/2, 115);
+  // Fond
+  var g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,'#0f2342'); g.addColorStop(1,'#08111f');
+  x.fillStyle=g; x.fillRect(0,0,W,H);
 
-    // Badge QR entrée
-    ctx.font = '600 16px Georgia, serif';
-    ctx.fillStyle = '#c9a84c';
-    ctx.fillText('✦ VOTRE QR CODE D\'ENTRÉE ✦', W/2, 170);
-
-    // Cadre blanc pour le QR
-    var qrSize = 460, qx = (W-qrSize)/2, qy = 210;
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(qx-20, qy-20, qrSize+40, qrSize+40);
-    ctx.drawImage(qrImg, qx, qy, qrSize, qrSize);
-
-    // Nom de l'invité
-    ctx.fillStyle = '#f0f6ff';
-    ctx.font = '600 38px Georgia, serif';
-    ctx.fillText(nom, W/2, qy+qrSize+90);
-
-    // Présence confirmée
-    ctx.fillStyle = '#5de09a';
-    ctx.font = '600 20px Georgia, serif';
-    ctx.fillText('✓ PRÉSENCE CONFIRMÉE', W/2, qy+qrSize+135);
-
-    // Instruction
-    ctx.fillStyle = '#7090b8';
-    ctx.font = 'italic 19px Georgia, serif';
-    ctx.fillText('Présentez ce QR code à l\'entrée de la salle', W/2, qy+qrSize+185);
-
-    // Télécharger
-    try {
-      var lien = document.createElement('a');
-      lien.download = 'QR-Mariage-' + nom.replace(/\s+/g,'-') + '.png';
-      lien.href = c.toDataURL('image/png');
-      document.body.appendChild(lien);
-      lien.click();
-      document.body.removeChild(lien);
-      btn.innerHTML = '✓ QR code téléchargé !';
-      setTimeout(function(){ btn.innerHTML = oldHtml; }, 2500);
-    } catch(e){
-      btn.innerHTML = oldHtml;
-      alert('Faites une capture d\'écran du QR code pour le conserver.');
+  // Photo des mariés en en-tête
+  try{
+    var bg=getComputedStyle(document.querySelector('.photo-bg')).backgroundImage;
+    var m=bg.match(/url\(["']?(.*?)["']?\)$/);
+    if(m){
+      var img=await new Promise(function(ok,ko){var i=new Image(); i.onload=function(){ok(i)}; i.onerror=ko; i.src=m[1];});
+      var hh=700, sh=img.width*hh/W;
+      x.drawImage(img, 0, img.height*0.02, img.width, sh, 0, 0, W, hh);
+      var f=x.createLinearGradient(0,0,0,hh);
+      f.addColorStop(0,'rgba(15,35,66,0.35)'); f.addColorStop(0.4,'rgba(13,29,54,0.1)'); f.addColorStop(0.75,'rgba(12,26,49,0.7)'); f.addColorStop(1,'rgb(12,26,49)');
+      x.fillStyle=f; x.fillRect(0,0,W,hh+2);
     }
-  };
-  qrImg.onerror = function(){
-    btn.innerHTML = oldHtml;
-    alert('Téléchargement impossible. Faites une capture d\'écran du QR code.');
-  };
-  qrImg.src = qrUrl;
+  }catch(e){}
+
+  x.textAlign='center'; x.textBaseline='alphabetic';
+  function fit(txt, font, max){ var s=parseInt(font.match(/(\d+)px/)[1]); while(s>14){ x.font=font.replace(/\d+px/, s+'px'); if(x.measureText(txt).width<=max) break; s-=2; } }
+
+  // Noms
+  var gold=x.createLinearGradient(300,0,780,0); gold.addColorStop(0,'#c9a84c'); gold.addColorStop(0.5,'#f6e2a4'); gold.addColorStop(1,'#c9a84c');
+  x.fillStyle=gold; x.shadowColor='rgba(0,0,0,0.6)'; x.shadowBlur=18;
+  x.font='130px "Great Vibes", cursive'; x.fillText('Hope & Josué', W/2, 600);
+  x.shadowBlur=0;
+  x.fillStyle='#d8c08a'; x.font='600 30px "Cormorant Garamond", serif';
+  x.fillText('M A R I A G E   ·   1 7  &  1 9   D É C E M B R E   2 0 2 6', W/2, 660);
+
+  // Badge présence confirmée
+  var bw=440, bx=(W-bw)/2, by=715;
+  x.fillStyle='rgba(34,160,90,0.18)'; x.strokeStyle='rgba(93,224,154,0.7)'; x.lineWidth=2;
+  x.beginPath(); x.roundRect ? x.roundRect(bx,by,bw,62,31) : x.rect(bx,by,bw,62); x.fill(); x.stroke();
+  x.fillStyle='#5de09a'; x.font='600 28px "Cormorant Garamond", serif'; x.fillText('✓   PRÉSENCE CONFIRMÉE', W/2, by+41);
+
+  // Invité
+  x.fillStyle='#f0f6ff'; fit(d.nom, '600 60px "Playfair Display", serif', 900); x.fillText(d.nom, W/2, 860);
+  var det=d.presence + '  ·  ' + d.nb + ' personne' + (parseInt(d.nb)>1?'s':'');
+  x.fillStyle='#b8cce8'; fit(det, 'italic 36px "Cormorant Garamond", serif', 920); x.fillText(det, W/2, 912);
+
+  // QR code (dessiné localement)
+  var qb=410, qx=(W-qb)/2, qy=950;
+  x.fillStyle='#ffffff'; x.beginPath(); x.roundRect ? x.roundRect(qx,qy,qb,qb,18) : x.rect(qx,qy,qb,qb); x.fill();
+  x.strokeStyle='#c9a84c'; x.lineWidth=4; x.stroke();
+  var qr=qrcode(0,'M'); qr.addData(d.url); qr.make();
+  var n=qr.getModuleCount(), cell=Math.floor((qb-48)/n), off=(qb-cell*n)/2;
+  x.fillStyle='#0b1628';
+  for(var r=0;r<n;r++) for(var k=0;k<n;k++) if(qr.isDark(r,k)) x.fillRect(qx+off+k*cell, qy+off+r*cell, cell, cell);
+
+  x.fillStyle='#c9a84c'; x.font='600 26px "Cormorant Garamond", serif';
+  x.fillText('✦  VOTRE PASS D\'ENTRÉE  ✦', W/2, 1405);
+
+  // Cadre doré
+  x.strokeStyle='rgba(201,168,76,0.75)'; x.lineWidth=3; x.strokeRect(26,26,W-52,H-52);
+  x.strokeStyle='rgba(201,168,76,0.3)'; x.lineWidth=1; x.strokeRect(38,38,W-76,H-76);
+
+  return await new Promise(function(ok){ c.toBlob(ok,'image/png'); });
 }
 
 /* ── GÉNÉRATION TOKEN UNIQUE ── */
