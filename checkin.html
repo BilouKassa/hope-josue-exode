@@ -129,9 +129,10 @@ body{background:var(--bleu);font-family:'Cormorant Garamond',Georgia,serif;displ
       <div class="g-row"><div class="g-ico"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#c9a84c" stroke-width="1.4"><circle cx="10" cy="7" r="3"/><path d="M4 17c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg></div><span class="g-k">Nom</span><span class="g-v" id="r-nom">—</span></div>
       <div class="g-row"><div class="g-ico"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#c9a84c" stroke-width="1.4"><rect x="3" y="4" width="14" height="13" rx="2"/><path d="M3 9h14M8 4V2M12 4V2"/></svg></div><span class="g-k">Présence</span><span class="g-v it" id="r-presence">—</span></div>
       <div class="g-row"><div class="g-ico"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#c9a84c" stroke-width="1.4"><path d="M9 6H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-2M9 6V4a2 2 0 014 0v2M9 6h4"/></svg></div><span class="g-k">Personnes</span><span class="g-v"><span class="pill" id="r-nb">—</span></span></div>
-      <div class="g-row"><div class="g-ico"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#c9a84c" stroke-width="1.4"><path d="M3 5a2 2 0 012-2h2l2 4-1.5 1.5a11 11 0 005 5L14 12l4 2v2a2 2 0 01-2 2A15 15 0 013 5z"/></svg></div><span class="g-k">WhatsApp</span><span class="g-v" id="r-wa">—</span></div>
+      <div class="g-row" id="r-wa-row" style="display:none"><div class="g-ico"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#c9a84c" stroke-width="1.4"><path d="M3 5a2 2 0 012-2h2l2 4-1.5 1.5a11 11 0 005 5L14 12l4 2v2a2 2 0 01-2 2A15 15 0 013 5z"/></svg></div><span class="g-k">WhatsApp</span><span class="g-v" id="r-wa">—</span></div>
       <div class="g-row" id="r-msg-row" style="display:none"><div class="g-ico"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="#c9a84c" stroke-width="1.4"><path d="M2 5h16v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm0 0l8 6 8-6"/></svg></div><span class="g-k">Message</span><span class="g-v it" id="r-msg">—</span></div>
     </div>
+    <div id="dup" style="display:none;margin:0 24px 14px;padding:12px 15px;border-radius:3px;background:rgba(232,149,46,0.14);border:1px solid rgba(232,149,46,0.6);color:#f2b366;font-size:14px;line-height:1.5"></div>
     <div class="stamp"><svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#5de09a" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2 2"/></svg><span id="r-heure">Check-in enregistré</span></div>
     <button class="btn-next" onclick="reset()"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 2h6v6H2zM12 2h6v6h-6zM2 12h6v6H2z"/></svg>Invité suivant</button>
   </div>
@@ -150,53 +151,32 @@ body{background:var(--bleu);font-family:'Cormorant Garamond',Georgia,serif;displ
 <div class="footer">Hope &amp; Josué Exode · Décembre 2026</div>
 
 <script>
-var SECRET='HJ2026-xK9#mP!qRnT@vLw$eZuYs3';
-var html5QrCode=null, dejaTraite=false;
+// Clé PUBLIQUE : elle permet seulement de VÉRIFIER un pass, jamais d'en créer un.
+var PUBLIC_KEY={"kty": "EC", "crv": "P-256", "x": "I34ZoX0HEmgXwcLiZ9io3Kd0MyeIZH0Jp2VzSt64_tg", "y": "r-UFyLEIBZyQH2UVPViTobLEIOeGs0mkZC_exGNKe2M"};
+var JOURS={'17':'17 déc. — Cérémonie religieuse','19':'19 déc. — Réception & Fête','L':'Les deux jours (17 & 19 déc.)'};
 
-(function(){
-  var c=document.getElementById('cvs-bg'),ctx=c.getContext('2d'),pts=[];
-  function rs(){c.width=window.innerWidth;c.height=window.innerHeight}
-  rs();window.addEventListener('resize',rs);
-  function mk(){return{x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+0.3,vx:(Math.random()-0.5)*0.18,vy:-(Math.random()*0.32+0.06),op:Math.random()*0.45+0.1,fade:Math.random()*0.003+0.001,g:Math.random()>0.5}}
-  for(var i=0;i<80;i++)pts.push(mk());
-  function draw(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(function(p,i){p.x+=p.vx;p.y+=p.vy;p.op-=p.fade;if(p.op<=0||p.y<-10){pts[i]=mk();pts[i].y=c.height+5;return}ctx.save();ctx.globalAlpha=p.op;ctx.fillStyle=p.g?'#c9a84c':'#fff';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();ctx.restore()});requestAnimationFrame(draw)}
-  draw();
-})();
+function b64uToBytes(s){ s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4) s+='='; var b=atob(s), u=new Uint8Array(b.length); for(var i=0;i<b.length;i++) u[i]=b.charCodeAt(i); return u; }
 
-// Vérifier la signature HMAC du token
-async function verifierSignature(d){
+async function verifierPass(d, sig){
   try{
-    var parts=(d.t||'').split('.');
-    if(parts.length!==2) return false;
-    var uid=parts[0], sigRecue=parts[1];
-    var encoder=new TextEncoder();
-    var cryptoKey=await window.crypto.subtle.importKey('raw',encoder.encode(SECRET),{name:'HMAC',hash:'SHA-256'},false,['sign']);
-    var payload=uid+'|'+d.n+'|'+d.w+'|'+d.nb+'|'+d.p;
-    var sigBuffer=await window.crypto.subtle.sign('HMAC',cryptoKey,encoder.encode(payload));
-    var sigHex=Array.from(new Uint8Array(sigBuffer)).map(function(b){return b.toString(16).padStart(2,'0')}).join('').substring(0,32);
-    return sigHex===sigRecue;
-  }catch(e){return false;}
+    if(!d||d.v!==2||!d.id||!d.n||!sig) return false;
+    var key=await crypto.subtle.importKey('jwk',PUBLIC_KEY,{name:'ECDSA',namedCurve:'P-256'},false,['verify']);
+    var msg=new TextEncoder().encode('v2|'+d.id+'|'+d.n+'|'+d.p+'|'+d.nb);
+    return await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,b64uToBytes(sig),msg);
+  }catch(e){ return false; }
 }
 
 async function traiterQR(qrData){
   document.getElementById('scan-hint').style.display='none';
   document.getElementById('status-dot').classList.remove('on');
-  showLoader('Vérification de la signature…');
-
-  // Extraire le paramètre q= depuis l'URL du QR
-  var q=null;
-  try{var u=new URL(qrData);q=u.searchParams.get('q');}catch(e){q=qrData;}
-  if(!q){hideLoader();afficherNOK();return;}
-
-  // Décoder les infos de l'invité
-  var d;
-  try{ d=JSON.parse(decodeURIComponent(escape(atob(q)))); }catch(e){hideLoader();afficherNOK();return;}
-  if(!d||!d.n||!d.t){hideLoader();afficherNOK();return;}
-
-  // Vérifier la signature anti-fraude
-  var valide=await verifierSignature(d);
+  showLoader('Vérification du pass…');
+  var q=null, s=null;
+  try{ var u=new URL(qrData); q=u.searchParams.get('q'); s=u.searchParams.get('s'); }catch(e){}
+  var d=null;
+  try{ d=JSON.parse(new TextDecoder().decode(b64uToBytes(q))); }catch(e){}
+  var ok=await verifierPass(d, s);
   hideLoader();
-  if(valide){ afficherOK(d); } else { afficherNOK(); }
+  if(ok) afficherOK(d); else afficherNOK();
 }
 
 function afficherOK(d){
@@ -204,12 +184,20 @@ function afficherOK(d){
   document.getElementById('res-nok').style.display='none';
   document.getElementById('res-ok').style.display='block';
   document.getElementById('r-nom').textContent=d.n;
-  document.getElementById('r-presence').textContent=d.p;
+  document.getElementById('r-presence').textContent=JOURS[d.p]||d.p;
   document.getElementById('r-nb').textContent=(d.nb||1)+' personne'+((parseInt(d.nb)||1)>1?'s':'');
-  document.getElementById('r-wa').textContent=d.w||'—';
-  if(d.m){document.getElementById('r-msg').textContent=d.m;document.getElementById('r-msg-row').style.display='flex';}
-  var now=new Date();
-  document.getElementById('r-heure').textContent='Check-in à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  var now=new Date(), h=now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  // Mémoire des pass déjà scannés sur CE téléphone
+  var vus={}; try{ vus=JSON.parse(localStorage.getItem('hj_scannes')||'{}'); }catch(e){}
+  var dup=document.getElementById('dup');
+  if(vus[d.id]){
+    dup.innerHTML='⚠️ <b>Pass déjà scanné à '+vus[d.id]+'</b> sur ce téléphone.<br>Vérifiez que ce n\'est pas une 2ᵉ entrée avec le même pass.';
+    dup.style.display='block';
+  } else {
+    dup.style.display='none';
+    vus[d.id]=h; try{ localStorage.setItem('hj_scannes',JSON.stringify(vus)); }catch(e){}
+  }
+  document.getElementById('r-heure').textContent='Check-in à '+h;
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function afficherNOK(){
@@ -221,7 +209,6 @@ function afficherNOK(){
 function reset(){
   document.getElementById('res-ok').style.display='none';
   document.getElementById('res-nok').style.display='none';
-  document.getElementById('r-msg-row').style.display='none';
   document.getElementById('vue-scanner').style.display='block';
   document.getElementById('placeholder').style.display='none';
   document.getElementById('btn-start').style.display='none';
