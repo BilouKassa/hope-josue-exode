@@ -69,9 +69,10 @@ textarea{resize:vertical;min-height:90px;line-height:1.45}
   <div id="app" class="hidden">
     <div class="card">
       <h2><span class="step">1</span>Coller la confirmation reçue</h2>
-      <p class="sub">Copiez le message WhatsApp de l'invité et collez-le ici : les infos se remplissent toutes seules.</p>
+      <p class="sub">Dans WhatsApp, appuyez longtemps sur le message de l'invité → <b>Copier</b>. Revenez ici et appuyez sur le bouton doré.</p>
       <textarea id="paste" placeholder="✅ Confirmation de présence&#10;👤 Nom : …"></textarea>
-      <button class="btn ghost" onclick="remplir()">Remplir automatiquement</button>
+      <button class="btn" onclick="collerEtRemplir()">📋 Coller le message de l'invité</button>
+      <button class="btn ghost" onclick="remplir()">Remplir à partir du texte collé</button>
       <div class="msg" id="paste-msg"></div>
     </div>
 
@@ -151,9 +152,27 @@ async function deverrouiller(){
 }
 function ouvrirApp(){ $('lock').classList.add('hidden'); $('app').classList.remove('hidden'); afficherHist(); }
 function verrouiller(){ if(!confirm('Verrouiller cet appareil ? Il faudra recoller la clé pour créer des pass.'))return; try{localStorage.removeItem('hj_admin_key')}catch(e){} location.reload(); }
-(async function(){ var t=null; try{t=localStorage.getItem('hj_admin_key')}catch(e){} if(t){ try{cleSignature=await chargerCle(t); ouvrirApp();}catch(e){} } })();
+(async function(){
+  var t=null;
+  if(location.hash.indexOf('#k=')===0){            // lien magique envoyé aux mariés
+    t=decodeURIComponent(location.hash.slice(3));
+    history.replaceState(null,'',location.pathname); // on efface la clé de la barre d'adresse
+    try{ cleSignature=await chargerCle(t); localStorage.setItem('hj_admin_key',t); ouvrirApp(); bienvenue(); return; }
+    catch(e){ $('k-msg').className='msg err'; $('k-msg').textContent='Ce lien est incomplet. Demandez à Bilal de vous le renvoyer.'; return; }
+  }
+  try{t=localStorage.getItem('hj_admin_key')}catch(e){}
+  if(t){ try{cleSignature=await chargerCle(t); ouvrirApp();}catch(e){} }
+})();
+function bienvenue(){ var b=document.createElement('div'); b.className='card'; b.style.borderColor='rgba(93,224,154,0.6)';
+  b.innerHTML='<h2 style="color:#5de09a">✓ Votre espace est prêt</h2><p class="sub" style="margin:0">Ce téléphone est maintenant reconnu. La prochaine fois, ouvrez simplement le lien de votre espace.</p>';
+  $('app').insertBefore(b,$('app').firstChild); }
 
 /* ── LECTURE DU MESSAGE WHATSAPP ── */
+async function collerEtRemplir(){
+  try{ var t=await navigator.clipboard.readText(); if(t){ $('paste').value=t; remplir(); return; } }catch(e){}
+  $('paste-msg').className='msg err'; $('paste-msg').textContent='Appuyez longtemps dans la case ci-dessus → Coller, puis sur « Remplir ».';
+  $('paste').focus();
+}
 function champ(txt,label){ var r=new RegExp(label+'\\s*:\\s*(.+)','i'); var m=txt.match(r); return m?m[1].replace(/[*_]/g,'').trim():''; }
 function remplir(){
   var t=$('paste').value, m=$('paste-msg');
