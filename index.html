@@ -228,6 +228,21 @@ body{
 .lieu-nom{font-family:'Playfair Display',serif;font-size:20px;color:var(--texte);margin-bottom:4px}
 .lieu-sub{font-size:12px;color:var(--texte3);font-style:italic}
 
+
+/* ── PROGRAMME & LIEUX ── */
+.prog{border:0.5px solid rgba(201,168,76,0.25);background:rgba(201,168,76,0.04);border-radius:3px;padding:20px 18px 8px;margin-bottom:22px}
+.prog-day{display:flex;align-items:center;gap:10px;margin:14px 0 6px}
+.prog-day::before,.prog-day::after{content:'';flex:1;height:0.5px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.4),transparent)}
+.prog-day span{font-family:'Playfair Display',serif;font-size:13px;letter-spacing:1.5px;color:var(--or2);white-space:nowrap}
+.prog-item{display:flex;gap:14px;align-items:flex-start;text-align:left;padding:12px 0;border-bottom:0.5px solid rgba(255,255,255,0.06)}
+.prog-item:last-child{border-bottom:none}
+.prog-ico{flex:0 0 40px;height:40px;border-radius:50%;border:1px solid rgba(201,168,76,0.45);background:rgba(201,168,76,0.08);display:flex;align-items:center;justify-content:center}
+.prog-ico svg{width:20px;height:20px;fill:none;stroke:var(--or2);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.prog-titre{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--or);margin-bottom:3px}
+.prog-lieu{font-family:'Playfair Display',serif;font-size:17px;color:var(--texte);line-height:1.3}
+.prog-detail{font-size:13.5px;color:var(--texte3);font-style:italic;line-height:1.5;margin-top:2px}
+.prog-map{display:inline-block;margin-top:7px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--or2);text-decoration:none;border-bottom:1px solid rgba(201,168,76,0.45);padding-bottom:1px}
+
 /* ── BÉNÉDICTION ── */
 .blessing{text-align:center;font-style:italic;font-size:15.5px;color:var(--texte2);line-height:2.1;font-weight:300;margin-bottom:12px}
 .participation{text-align:center;font-size:12.5px;color:rgba(201,168,76,0.6);font-style:italic;margin-bottom:26px}
@@ -565,26 +580,64 @@ body:not(.revele) .reveal{opacity:0}
     <!-- DATES -->
     <div class="dates-row reveal">
       <div class="date-card">
-        <span class="date-tag">Cérémonie religieuse</span>
+        <span class="date-tag">Mariage coutumier</span>
         <span class="date-num">17</span>
         <span class="date-mois">Décembre</span>
         <span class="date-an">2026</span>
-        <span class="date-event">Mariage coutumier</span>
+        <span class="date-event">Mindoubé 2</span>
       </div>
       <div class="date-card">
-        <span class="date-tag">Réception &amp; Fête</span>
+        <span class="date-tag">Civil · Religieux · Soirée</span>
         <span class="date-num">19</span>
         <span class="date-mois">Décembre</span>
         <span class="date-an">2026</span>
-        <span class="date-event">Mariage civil</span>
+        <span class="date-event">Mairie · Église · Hôtel</span>
       </div>
     </div>
 
-    <!-- LIEU -->
-    <div class="lieu-card reveal">
-      <span class="lieu-label">Lieu de la célébration</span>
-      <div class="lieu-nom">Libreville, Gabon</div>
-      <div class="lieu-sub">Lieu exact communiqué ultérieurement</div>
+    <!-- PROGRAMME & LIEUX -->
+    <div class="prog reveal">
+      <span class="lieu-label" style="text-align:center">✦ Programme &amp; lieux ✦</span>
+
+      <div class="prog-day"><span>Jeudi 17 décembre 2026</span></div>
+        <div class="prog-item">
+          <div class="prog-ico"><svg viewBox="0 0 24 24"><path d="M12 3c4 3 6 6 6 9a6 6 0 01-12 0c0-3 2-6 6-9z"/><path d="M12 10v8M9 14h6"/></svg></div>
+          <div class="prog-txt">
+            <div class="prog-titre">Mariage coutumier</div>
+            <div class="prog-lieu">Mindoubé 2</div>
+            <div class="prog-detail">Nouvelle route bétonnée — ruelle de la cité des Médecins</div>
+            <a class="prog-map" href="https://www.google.com/maps/search/?api=1&query=Mindoub%C3%A9+2%2C+Libreville%2C+Gabon" target="_blank" rel="noopener">Itinéraire ↗</a>
+          </div>
+        </div>
+
+      <div class="prog-day"><span>Samedi 19 décembre 2026</span></div>
+        <div class="prog-item">
+          <div class="prog-ico"><svg viewBox="0 0 24 24"><path d="M3 10l9-6 9 6M5 10v9M19 10v9M9 10v9M15 10v9M3 21h18"/></svg></div>
+          <div class="prog-txt">
+            <div class="prog-titre">Mariage civil</div>
+            <div class="prog-lieu">Mairie du 4ᵉ arrondissement</div>
+            <div class="prog-detail">Plaine Niger</div>
+            <a class="prog-map" href="https://www.google.com/maps/search/?api=1&query=Mairie+du+4%C3%A8me+arrondissement%2C+Plaine+Niger%2C+Libreville%2C+Gabon" target="_blank" rel="noopener">Itinéraire ↗</a>
+          </div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-ico"><svg viewBox="0 0 24 24"><path d="M12 2v6M9.5 4.5h5M6 21V12l6-4 6 4v9M10 21v-4a2 2 0 014 0v4"/></svg></div>
+          <div class="prog-txt">
+            <div class="prog-titre">Mariage religieux</div>
+            <div class="prog-lieu">Église Ciel Logos</div>
+            <div class="prog-detail">Site derrière l'OPT — Mindoubé</div>
+            <a class="prog-map" href="https://www.google.com/maps/search/?api=1&query=%C3%89glise+Ciel+Logos%2C+Mindoub%C3%A9%2C+Libreville%2C+Gabon" target="_blank" rel="noopener">Itinéraire ↗</a>
+          </div>
+        </div>
+        <div class="prog-item">
+          <div class="prog-ico"><svg viewBox="0 0 24 24"><path d="M8 3h8l-1 7a3 3 0 01-6 0L8 3zM12 13v6M8 21h8"/></svg></div>
+          <div class="prog-txt">
+            <div class="prog-titre">Soirée</div>
+            <div class="prog-lieu">Hôtel Excellence</div>
+            <div class="prog-detail">Site de l'ancienne Sobraga — ruelle allant à l'université</div>
+            <a class="prog-map" href="https://www.google.com/maps/search/?api=1&query=H%C3%B4tel+Excellence%2C+Libreville%2C+Gabon" target="_blank" rel="noopener">Itinéraire ↗</a>
+          </div>
+        </div>
     </div>
 
     <p class="blessing reveal">
@@ -633,11 +686,11 @@ body:not(.revele) .reveal{opacity:0}
         <div class="field reveal">
           <label class="field-lbl">Je serai présent(e) au *</label>
           <div class="jours" id="j-wrap">
-            <div class="jour" data-v="17 décembre 2026 – Cérémonie religieuse" onclick="pickJour(this)">
-              <span class="jour-d">17 Déc</span>Cérémonie
+            <div class="jour" data-v="17 décembre 2026 – Mariage coutumier" onclick="pickJour(this)">
+              <span class="jour-d">17 Déc</span>Coutumier
             </div>
-            <div class="jour" data-v="19 décembre 2026 – Réception & Fête" onclick="pickJour(this)">
-              <span class="jour-d">19 Déc</span>Réception
+            <div class="jour" data-v="19 décembre 2026 – Civil, religieux & soirée" onclick="pickJour(this)">
+              <span class="jour-d">19 Déc</span>Civil · Église · Soirée
             </div>
             <div class="jour" data-v="Les deux jours (17 & 19 décembre 2026)" onclick="pickJour(this)">
               <span class="jour-d">17 & 19</span>Les deux
